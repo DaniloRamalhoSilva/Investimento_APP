@@ -14,6 +14,9 @@ describe('api client', () => {
 
   it('traduz códigos conhecidos sem depender da mensagem do backend', () => {
     expect(apiMessage(new ApiError(401, 'AUTH_INVALID_CREDENTIALS', 'raw'))).toBe('E-mail ou senha inválidos.');
+    expect(apiMessage(new ApiError(409, 'PLAN_LIMIT_REACHED', 'raw'))).toContain(
+      'limite de fundos na carteira',
+    );
   });
 
   it('renova a sessão e repete uma requisição expirada', async () => {

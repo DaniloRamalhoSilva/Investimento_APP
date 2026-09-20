@@ -27,5 +27,7 @@ export function useApiResource<T>(loader: () => Promise<T>) {
     return () => clearTimeout(timer);
   }, [load]);
 
-  return { data, error, loading, refreshing, reload: () => load('refresh'), setData };
+  const reload = useCallback(() => load('refresh'), [load]);
+
+  return { data, error, loading, refreshing, reload, setData };
 }

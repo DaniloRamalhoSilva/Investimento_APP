@@ -139,9 +139,11 @@ export function apiMessage(error: unknown) {
     const messages: Record<string, string> = {
       AUTH_INVALID_CREDENTIALS: 'E-mail ou senha inválidos.',
       USER_ALREADY_EXISTS: 'Já existe uma conta com este e-mail.',
-      PLAN_LIMIT_REACHED: 'Você atingiu o limite de ativos do seu plano.',
+      PLAN_LIMIT_REACHED: 'Você atingiu o limite de fundos na carteira do seu plano. Exclua um ativo da carteira para liberar uma vaga.',
       AUTH_GOOGLE_LINK_REQUIRED: 'Este e-mail já possui conta. Entre com senha para vincular o Google.',
       FUND_NOT_FOUND: 'Ativo não encontrado.',
+      FUND_NOT_IN_PORTFOLIO: 'Este ativo ainda não foi adicionado à sua carteira.',
+      FUND_MONITORING_ACTIVE: 'Desligue o monitoramento antes de excluir este ativo.',
       ANALYSIS_NOT_FOUND: 'Esta análise não está mais disponível.',
     };
     return messages[error.code] || error.message;

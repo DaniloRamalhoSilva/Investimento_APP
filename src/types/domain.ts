@@ -45,14 +45,15 @@ export type Dashboard = {
 export type PortfolioFund = {
   id: string;
   ticker: string;
-  ativo: boolean;
+  monitorando: boolean;
   adicionadoEm: string | null;
 };
 
 export type SearchFund = {
   id: string;
   ticker: string;
-  seguindo: boolean;
+  naCarteira: boolean;
+  monitorando: boolean;
 };
 
 export type Analysis = {

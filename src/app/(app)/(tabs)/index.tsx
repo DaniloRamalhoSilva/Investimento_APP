@@ -1,6 +1,6 @@
-import { useCallback } from 'react';
+import { useCallback, useRef } from 'react';
 import { RefreshControl, StyleSheet, Text, View } from 'react-native';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 
 import { Brand } from '@/components/brand';
 import { Card } from '@/components/card';
@@ -21,6 +21,18 @@ export default function HomeScreen() {
     return response.data;
   }, []);
   const resource = useApiResource(loadDashboard);
+  const { reload } = resource;
+  const hasFocused = useRef(false);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (hasFocused.current) {
+        void reload();
+      } else {
+        hasFocused.current = true;
+      }
+    }, [reload]),
+  );
 
   if (resource.loading) return <Screen scroll={false}><StatePanel loading title="Consultando sua carteira" message="Buscando apenas o que merece sua atenção." /></Screen>;
   if (resource.error) return <Screen scroll={false}><StatePanel title="Não foi possível atualizar" message={resource.error} onRetry={resource.reload} /></Screen>;
@@ -64,7 +76,7 @@ export default function HomeScreen() {
 
       <View style={styles.list}>
         {dashboard?.destaques.length ? dashboard.destaques.map((item) => (
-          <FeedCard key={item.analiseId} item={item} onPress={() => router.push({ pathname: '/(app)/analysis/[id]', params: { id: item.analiseId } })} />
+          <FeedCard compact key={item.analiseId} item={item} onPress={() => router.push({ pathname: '/(app)/analysis/[id]', params: { id: item.analiseId } })} />
         )) : (
           <Card style={styles.emptyCard}>
             <View style={styles.okDot} />

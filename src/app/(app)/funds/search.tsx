@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, FlatList, Modal, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { Button } from '@/components/button';
 import { StatePanel } from '@/components/state-panel';
 import { apiMessage, apiRequest } from '@/services/api';
 import { colors, radius, spacing } from '@/theme/tokens';
@@ -14,6 +15,7 @@ export default function SearchFundsScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [adding, setAdding] = useState<string | null>(null);
+  const [addError, setAddError] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -33,13 +35,16 @@ export default function SearchFundsScreen() {
   }, [query]);
 
   async function add(item: SearchFund) {
-    if (item.seguindo || adding) return;
+    if (item.naCarteira || adding) return;
+    setAddError(null);
     setAdding(item.ticker);
     try {
       await apiRequest<{ data: PortfolioFund }>('/me/funds', { method: 'POST', body: JSON.stringify({ ticker: item.ticker }) });
-      setItems((current) => current.map((fund) => fund.id === item.id ? { ...fund, seguindo: true } : fund));
+      setItems((current) => current.map((fund) => fund.id === item.id
+        ? { ...fund, naCarteira: true, monitorando: true }
+        : fund));
     } catch (reason) {
-      Alert.alert('Não foi possível adicionar', apiMessage(reason));
+      setAddError(apiMessage(reason));
     } finally {
       setAdding(null);
     }
@@ -77,18 +82,36 @@ export default function SearchFundsScreen() {
           renderItem={({ item }) => (
             <Pressable
               onPress={() => void add(item)}
-              disabled={item.seguindo || Boolean(adding)}
+              disabled={item.naCarteira || Boolean(adding)}
               accessibilityRole="button"
-              accessibilityLabel={item.seguindo ? `${item.ticker} já monitorado` : `Adicionar ${item.ticker}`}
+              accessibilityLabel={item.naCarteira ? `${item.ticker} já está na carteira` : `Adicionar ${item.ticker}`}
               style={({ pressed }) => [styles.row, pressed && styles.pressed]}
             >
               <View style={styles.mark}><Text style={styles.markText}>{item.ticker.slice(0, 2)}</Text></View>
               <View style={styles.body}><Text style={styles.ticker}>{item.ticker}</Text><Text style={styles.meta}>Fundo imobiliário</Text></View>
-              {adding === item.ticker ? <ActivityIndicator color={colors.brand} /> : <Text style={[styles.action, item.seguindo && styles.following]}>{item.seguindo ? 'Monitorando' : '+ Adicionar'}</Text>}
+              {adding === item.ticker ? <ActivityIndicator color={colors.brand} /> : (
+                <Text style={[styles.action, item.naCarteira && styles.following]}>
+                  {item.naCarteira ? (item.monitorando ? 'Na carteira · ligado' : 'Na carteira · desligado') : '+ Adicionar'}
+                </Text>
+              )}
             </Pressable>
           )}
         />
       )}
+      <Modal
+        animationType="fade"
+        transparent
+        visible={Boolean(addError)}
+        onRequestClose={() => setAddError(null)}
+      >
+        <View style={styles.modalBackdrop}>
+          <View style={styles.modalCard} accessibilityViewIsModal>
+            <Text style={styles.modalTitle}>Não foi possível adicionar</Text>
+            <Text style={styles.modalText}>{addError}</Text>
+            <Button onPress={() => setAddError(null)}>Entendi</Button>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -113,4 +136,8 @@ const styles = StyleSheet.create({
   meta: { color: colors.textSubtle, fontSize: 11, marginTop: 2 },
   action: { color: colors.brand, fontSize: 12, fontWeight: '800' },
   following: { color: colors.positive },
+  modalBackdrop: { flex: 1, justifyContent: 'center', padding: spacing.xl, backgroundColor: 'rgba(0,0,0,0.72)' },
+  modalCard: { gap: spacing.md, padding: spacing.xl, borderWidth: 1, borderColor: colors.borderStrong, borderRadius: radius.lg, backgroundColor: colors.surfaceRaised },
+  modalTitle: { color: colors.text, fontSize: 20, lineHeight: 26, fontWeight: '700' },
+  modalText: { color: colors.textSecondary, fontSize: 14, lineHeight: 21, marginBottom: spacing.sm },
 });
