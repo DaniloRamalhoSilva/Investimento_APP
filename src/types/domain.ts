@@ -56,6 +56,35 @@ export type SearchFund = {
   monitorando: boolean;
 };
 
+export type PlanCode = 'GRATIS' | 'ESSENCIAL' | 'PREMIUM';
+
+export type PlanDefinition = {
+  code: PlanCode;
+  name: string;
+  priceMonthlyCents: number;
+  currency: 'BRL';
+  fundLimit: number;
+  recommended: boolean;
+  features: {
+    resumosIa: boolean;
+    classificacaoRelevancia: boolean;
+    possivelImpacto: boolean;
+    riscosIdentificados: boolean;
+    fonteOriginal: boolean;
+    alertasImportantes: boolean;
+    historico: 'BASICO' | 'COMPLETO';
+    anuncios: boolean;
+    recursosAvancados: boolean;
+  };
+};
+
+export type PlanOverview = {
+  currentPlan: PlanCode;
+  fundLimit: number;
+  fundsUsed: number;
+  plans: PlanDefinition[];
+};
+
 export type Analysis = {
   id: string;
   ticker: string;
