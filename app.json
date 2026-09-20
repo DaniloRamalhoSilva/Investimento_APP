@@ -1,0 +1,60 @@
+{
+  "expo": {
+    "name": "Sentinela",
+    "slug": "sentinela",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/sentinela-icon.png",
+    "scheme": "sentinela",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#061018",
+    "ios": {
+      "icon": "./assets/images/sentinela-icon.png",
+      "bundleIdentifier": "com.sentinela.investimentos",
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#061018",
+        "foregroundImage": "./assets/images/sentinela-foreground.png"
+      },
+      "package": "com.sentinela.investimentos",
+      "predictiveBackGestureEnabled": true
+    },
+    "web": {
+      "output": "static",
+      "favicon": "./assets/images/sentinela-icon.png"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#061018",
+          "image": "./assets/images/sentinela-foreground.png",
+          "imageWidth": 160
+        }
+      ],
+      "expo-secure-store",
+      [
+        "react-native-nitro-google-signin",
+        {
+          "iosUrlScheme": "com.googleusercontent.apps.configure-me-before-ios-build"
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "compileSdkVersion": 36,
+            "targetSdkVersion": 36
+          }
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    }
+  }
+}
