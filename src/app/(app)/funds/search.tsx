@@ -5,9 +5,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/button';
 import { StatePanel } from '@/components/state-panel';
-import { apiMessage, apiRequest } from '@/services/api';
+import { ApiError, apiMessage, apiRequest } from '@/services/api';
 import { colors, radius, spacing } from '@/theme/tokens';
 import type { PortfolioFund, SearchFund } from '@/types/domain';
+
+type AddError = { message: string; canUpgrade: boolean };
 
 export default function SearchFundsScreen() {
   const [query, setQuery] = useState('');
@@ -15,7 +17,7 @@ export default function SearchFundsScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [adding, setAdding] = useState<string | null>(null);
-  const [addError, setAddError] = useState<string | null>(null);
+  const [addError, setAddError] = useState<AddError | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -44,7 +46,10 @@ export default function SearchFundsScreen() {
         ? { ...fund, naCarteira: true, monitorando: true }
         : fund));
     } catch (reason) {
-      setAddError(apiMessage(reason));
+      setAddError({
+        message: apiMessage(reason),
+        canUpgrade: reason instanceof ApiError && reason.code === 'PLAN_LIMIT_REACHED',
+      });
     } finally {
       setAdding(null);
     }
@@ -106,9 +111,23 @@ export default function SearchFundsScreen() {
       >
         <View style={styles.modalBackdrop}>
           <View style={styles.modalCard} accessibilityViewIsModal>
-            <Text style={styles.modalTitle}>Não foi possível adicionar</Text>
-            <Text style={styles.modalText}>{addError}</Text>
-            <Button onPress={() => setAddError(null)}>Entendi</Button>
+            <Text style={styles.modalTitle}>
+              {addError?.canUpgrade ? 'Sua carteira está crescendo' : 'Não foi possível adicionar'}
+            </Text>
+            <Text style={styles.modalText}>{addError?.message}</Text>
+            {addError?.canUpgrade ? (
+              <View style={styles.modalActions}>
+                <Button variant="ghost" onPress={() => setAddError(null)}>Agora não</Button>
+                <Button onPress={() => {
+                  setAddError(null);
+                  router.replace('/(app)/(tabs)/perfil');
+                }}>
+                  Fazer upgrade
+                </Button>
+              </View>
+            ) : (
+              <Button onPress={() => setAddError(null)}>Entendi</Button>
+            )}
           </View>
         </View>
       </Modal>
@@ -140,4 +159,5 @@ const styles = StyleSheet.create({
   modalCard: { gap: spacing.md, padding: spacing.xl, borderWidth: 1, borderColor: colors.borderStrong, borderRadius: radius.lg, backgroundColor: colors.surfaceRaised },
   modalTitle: { color: colors.text, fontSize: 20, lineHeight: 26, fontWeight: '700' },
   modalText: { color: colors.textSecondary, fontSize: 14, lineHeight: 21, marginBottom: spacing.sm },
+  modalActions: { gap: spacing.sm },
 });
