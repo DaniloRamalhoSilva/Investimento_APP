@@ -1,3 +1,5 @@
+import { useThemeColors, useThemeStyles } from '@/theme/theme-context';
+import type { ThemeColors } from '@/theme/tokens';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { router } from 'expo-router';
@@ -6,10 +8,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { FeedCard } from '@/components/feed-card';
 import { StatePanel } from '@/components/state-panel';
 import { apiMessage, apiRequest } from '@/services/api';
-import { colors, spacing, typography } from '@/theme/tokens';
+import { spacing, typography } from '@/theme/tokens';
 import type { FeedItem, Page } from '@/types/domain';
 
 export default function AlertsScreen() {
+  const colors = useThemeColors();
+  const styles = useThemeStyles(createStyles);
   const [items, setItems] = useState<FeedItem[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(false);
@@ -75,7 +79,7 @@ export default function AlertsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.background },
   content: { flexGrow: 1, paddingHorizontal: spacing.xl, paddingBottom: 30 },
   header: { gap: spacing.sm, paddingTop: spacing.sm, paddingBottom: spacing.xxl },

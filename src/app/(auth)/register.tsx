@@ -1,3 +1,5 @@
+import { useThemeStyles } from '@/theme/theme-context';
+import type { ThemeColors } from '@/theme/tokens';
 import { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Link } from 'expo-router';
@@ -7,9 +9,10 @@ import { Button } from '@/components/button';
 import { TextField } from '@/components/text-field';
 import { useSession } from '@/features/auth/session-context';
 import { apiMessage } from '@/services/api';
-import { colors, spacing } from '@/theme/tokens';
+import { spacing } from '@/theme/tokens';
 
 export default function RegisterScreen() {
+  const styles = useThemeStyles(createStyles);
   const { register, loginWithGoogle } = useSession();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -69,7 +72,7 @@ export default function RegisterScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   form: { gap: spacing.lg },
   error: { color: colors.urgent, fontSize: 13, lineHeight: 19, textAlign: 'center' },
   divider: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },

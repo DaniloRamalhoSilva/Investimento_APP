@@ -1,8 +1,10 @@
+import { useThemeStyles } from '@/theme/theme-context';
+import type { ThemeColors } from '@/theme/tokens';
 import { Image, StyleSheet, Text, View } from 'react-native';
 
-import { colors } from '@/theme/tokens';
 
 export function Brand({ compact = false }: { compact?: boolean }) {
+  const styles = useThemeStyles(createStyles);
   return (
     <View style={styles.row} accessibilityRole="header">
       <Image
@@ -15,7 +17,7 @@ export function Brand({ compact = false }: { compact?: boolean }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', gap: 9 },
   mark: { width: 42, height: 42, borderRadius: 12 },
   markCompact: { width: 30, height: 30 },

@@ -18,6 +18,7 @@ type SessionContextValue = {
   logout: () => Promise<void>;
   deleteAccount: () => Promise<void>;
   reloadProfile: () => Promise<void>;
+  updateTheme: (theme: User['tema']) => Promise<void>;
 };
 
 const SessionContext = createContext<SessionContextValue | null>(null);
@@ -51,6 +52,22 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     const response = await apiRequest<{ data: User }>('/me');
     setUser(response.data);
   }, []);
+
+  const updateTheme = useCallback(async (theme: User['tema']) => {
+    const previous = user;
+    if (!previous || previous.tema === theme) return;
+    setUser({ ...previous, tema: theme });
+    try {
+      const response = await apiRequest<{ data: User }>('/me', {
+        method: 'PATCH',
+        body: JSON.stringify({ tema: theme }),
+      });
+      setUser(response.data);
+    } catch (error) {
+      setUser(previous);
+      throw error;
+    }
+  }, [user]);
 
   useEffect(() => {
     let active = true;
@@ -146,7 +163,8 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     logout,
     deleteAccount,
     reloadProfile,
-  }), [deleteAccount, isHydrating, login, loginWithGoogle, logout, register, reloadProfile, user]);
+    updateTheme,
+  }), [deleteAccount, isHydrating, login, loginWithGoogle, logout, register, reloadProfile, updateTheme, user]);
 
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;
 }

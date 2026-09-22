@@ -1,3 +1,5 @@
+import { useThemeColors, useThemeStyles } from '@/theme/theme-context';
+import type { ThemeColors } from '@/theme/tokens';
 import { useCallback, useRef } from 'react';
 import { RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
@@ -7,14 +9,17 @@ import { Card } from '@/components/card';
 import { FeedCard } from '@/components/feed-card';
 import { Screen } from '@/components/screen';
 import { StatePanel } from '@/components/state-panel';
+import { ThemeToggle } from '@/components/theme-toggle';
 import { useSession } from '@/features/auth/session-context';
 import { useApiResource } from '@/hooks/use-api-resource';
 import { apiRequest } from '@/services/api';
-import { colors, spacing, typography } from '@/theme/tokens';
+import { spacing, typography } from '@/theme/tokens';
 import type { Dashboard } from '@/types/domain';
 import { firstName, formatDate } from '@/utils/format';
 
 export default function HomeScreen() {
+  const colors = useThemeColors();
+  const styles = useThemeStyles(createStyles);
   const { user } = useSession();
   const loadDashboard = useCallback(async () => {
     const response = await apiRequest<{ data: Dashboard }>('/me/dashboard');
@@ -34,16 +39,23 @@ export default function HomeScreen() {
     }, [reload]),
   );
 
-  if (resource.loading) return <Screen scroll={false}><StatePanel loading title="Consultando sua carteira" message="Buscando apenas o que merece sua atenção." /></Screen>;
-  if (resource.error) return <Screen scroll={false}><StatePanel title="Não foi possível atualizar" message={resource.error} onRetry={resource.reload} /></Screen>;
-
   const dashboard = resource.data;
-  return (
-    <Screen refreshControl={<RefreshControl refreshing={resource.refreshing} onRefresh={resource.reload} tintColor={colors.brand} />}>
+  const header = (
+    <>
       <View style={styles.header}>
         <Brand compact />
-        <Text style={styles.updated}>{formatDate(dashboard?.ultimaAtualizacaoEm)}</Text>
+        <ThemeToggle />
       </View>
+      {dashboard ? <Text style={styles.updated}>{formatDate(dashboard.ultimaAtualizacaoEm)}</Text> : null}
+    </>
+  );
+
+  if (resource.loading) return <Screen scroll={false}>{header}<StatePanel loading title="Consultando sua carteira" message="Buscando apenas o que merece sua atenção." /></Screen>;
+  if (resource.error) return <Screen scroll={false}>{header}<StatePanel title="Não foi possível atualizar" message={resource.error} onRetry={resource.reload} /></Screen>;
+
+  return (
+    <Screen refreshControl={<RefreshControl refreshing={resource.refreshing} onRefresh={resource.reload} tintColor={colors.brand} />}>
+      {header}
       <Text style={styles.greeting}>Olá, {firstName(user?.nome)}</Text>
       <Text style={styles.lead}>Aqui está o que importa hoje.</Text>
 
@@ -89,9 +101,9 @@ export default function HomeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingTop: spacing.sm },
-  updated: { color: colors.textSubtle, fontSize: 11 },
+  updated: { alignSelf: 'flex-end', color: colors.textSubtle, fontSize: 11, marginTop: spacing.xs },
   greeting: { ...typography.title, color: colors.text, marginTop: 30 },
   lead: { color: colors.textSecondary, fontSize: 15, marginTop: 4 },
   summaryGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md, marginTop: spacing.xxl },

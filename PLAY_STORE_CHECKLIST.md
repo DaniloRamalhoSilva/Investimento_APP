@@ -1,6 +1,13 @@
 # Checklist Google Play — Sentinela
 
-Atualizado em 20/09/2026.
+Atualizado em 21/09/2026.
+
+## Modelo da primeira versão
+
+- [x] Liberar somente o plano Grátis; preços e limites dos planos pagos continuam no catálogo.
+- [x] Mostrar aviso claro e lista de espera ao usuário que desejar um plano pago.
+- [x] Lançar sem anúncios e sem cobrança; declarar corretamente essas condições no Play Console.
+- [ ] Aplicar as migrations da API, incluindo a tabela de interesse em planos, antes de distribuir o app.
 
 ## Aplicativo e build
 
@@ -22,6 +29,12 @@ Atualizado em 20/09/2026.
 - [ ] Publicar URL web para solicitação de exclusão de conta
 - [ ] Informar conta de demonstração/instruções para a equipe de revisão
 - [ ] Validar anonimização e prazo de retenção com a política de privacidade
+
+### Decisão de retenção a aprovar
+
+O responsável pelo produto deve aprovar e registrar prazos concretos para: conta e e-mail durante o uso, interesse na lista de espera, registros de acesso/segurança, dados de carteira e análises vinculadas, backups e exceções legais. Registrar também quem recebe esses dados e o prazo de remoção das cópias de segurança. Publicar a decisão na política de privacidade e na página de exclusão de conta, depois conferir o formulário Data Safety no Play Console.
+
+Hoje a exclusão no app anonimiza o cadastro e remove sessões, identidades de login, dispositivos e interesses em planos; os vínculos da carteira são desativados, mas permanecem no banco. A política publicada precisa descrever esse comportamento fielmente ou a API precisa ser alterada antes da publicação.
 
 ## Privacidade e dados
 
@@ -56,11 +69,13 @@ Atualizado em 20/09/2026.
 
 ## Assinaturas e anúncios
 
+- [x] Não oferecer checkout na primeira versão gratuita
 - [ ] Validar Google Play Billing antes de vender funcionalidades digitais no Android
 - [ ] Não integrar checkout Asaas dentro do app sem revisão específica da política
-- [ ] Criar contrato de entitlement no backend antes da tela de planos
-- [ ] Definir SDK de anúncios e atualizar Data Safety antes de ativar anúncios
-- [ ] Garantir que anúncios nunca pareçam alertas ou recomendações financeiras
+- [ ] Criar contrato de entitlement no backend antes de ativar planos pagos
+- [x] Lançar sem SDK de anúncios; catálogo da API informa `anuncios: false`
+- [ ] Antes de ativar anúncios, escolher rede e posicionamento, integrar SDK, revisar privacidade/Data Safety e atualizar a declaração de anúncios na Play
+- [ ] Ao ativar anúncios, garantir que nunca pareçam alertas ou recomendações financeiras
 
 ## Permissões e notificações
 
@@ -79,5 +94,6 @@ Atualizado em 20/09/2026.
 - [ ] Testar loading, sucesso, vazio, erro, offline e retry
 - [ ] Testar leitor de tela, contraste, fonte ampliada e alvos de toque
 - [ ] Realizar teste fechado antes de produção
+- [ ] Verificar se a conta pessoal criada após 13/11/2023 exige 12 testadores por 14 dias contínuos para solicitar acesso à produção
 - [ ] Preparar título, descrição curta, descrição completa, ícone, screenshots e imagem de destaque
 - [ ] Concluir classificação indicativa e público-alvo

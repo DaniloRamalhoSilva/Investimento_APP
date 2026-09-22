@@ -1,9 +1,11 @@
+import { useThemeStyles } from '@/theme/theme-context';
+import type { ThemeColors } from '@/theme/tokens';
 import type { PropsWithChildren } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import type { ScrollViewProps, ViewStyle } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { colors, spacing } from '@/theme/tokens';
+import { spacing } from '@/theme/tokens';
 
 type Props = PropsWithChildren<{
   scroll?: boolean;
@@ -12,6 +14,7 @@ type Props = PropsWithChildren<{
 }>;
 
 export function Screen({ children, scroll = true, contentStyle, refreshControl }: Props) {
+  const styles = useThemeStyles(createStyles);
   if (!scroll) {
     return (
       <SafeAreaView style={styles.safe} edges={['top']}>
@@ -32,7 +35,7 @@ export function Screen({ children, scroll = true, contentStyle, refreshControl }
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.background },
   fill: { flex: 1 },
   content: { paddingHorizontal: spacing.xl, paddingBottom: 36 },

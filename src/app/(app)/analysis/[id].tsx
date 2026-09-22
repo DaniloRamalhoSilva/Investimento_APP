@@ -1,3 +1,5 @@
+import { useThemeColors, useThemeStyles } from '@/theme/theme-context';
+import type { ThemeColors } from '@/theme/tokens';
 import { useCallback } from 'react';
 import { Linking, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -9,11 +11,13 @@ import { StatePanel } from '@/components/state-panel';
 import { StatusChip, statusColor } from '@/components/status-chip';
 import { useApiResource } from '@/hooks/use-api-resource';
 import { apiRequest } from '@/services/api';
-import { colors, spacing, typography } from '@/theme/tokens';
+import { spacing, typography } from '@/theme/tokens';
 import type { Analysis } from '@/types/domain';
 import { formatDate, humanizeCode } from '@/utils/format';
 
 export default function AnalysisScreen() {
+  const colors = useThemeColors();
+  const styles = useThemeStyles(createStyles);
   const { id } = useLocalSearchParams<{ id: string }>();
   const loadAnalysis = useCallback(async () => {
     const response = await apiRequest<{ data: Analysis }>(`/me/analyses/${id}`);
@@ -39,7 +43,7 @@ export default function AnalysisScreen() {
       </View>
 
       <View style={styles.metricRow}>
-        <Card style={styles.metric}><Text style={styles.metricLabel}>Impacto</Text><Text style={[styles.metricValue, { color: statusColor(analysis.impacto) }]}>{humanizeCode(analysis.impacto)}</Text></Card>
+        <Card style={styles.metric}><Text style={styles.metricLabel}>Impacto</Text><Text style={[styles.metricValue, { color: statusColor(analysis.impacto, colors) }]}>{humanizeCode(analysis.impacto)}</Text></Card>
         <Card style={styles.metric}><Text style={styles.metricLabel}>Horizonte</Text><Text style={styles.metricValue}>{humanizeCode(analysis.horizonte)}</Text></Card>
         <Card style={styles.metric}><Text style={styles.metricLabel}>Confiança</Text><Text style={styles.metricValue}>{humanizeCode(analysis.confianca)}</Text></Card>
       </View>
@@ -63,10 +67,11 @@ export default function AnalysisScreen() {
 }
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  const styles = useThemeStyles(createStyles);
   return <View style={styles.section}><Text style={styles.sectionTitle}>{title}</Text><View style={styles.sectionContent}>{children}</View></View>;
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   topbar: { minHeight: 52, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginHorizontal: -4 },
   back: { width: 40, color: colors.text, fontSize: 38, lineHeight: 38 },
   ticker: { color: colors.brand, fontSize: 15, fontWeight: '900', letterSpacing: 0.5 },

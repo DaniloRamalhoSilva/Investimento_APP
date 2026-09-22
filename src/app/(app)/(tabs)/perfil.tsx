@@ -1,5 +1,7 @@
-import { useCallback, useRef } from 'react';
-import { Alert, RefreshControl, StyleSheet, Text, View } from 'react-native';
+import { useThemeColors, useThemeStyles } from '@/theme/theme-context';
+import type { ThemeColors } from '@/theme/tokens';
+import { useCallback, useRef, useState } from 'react';
+import { Alert, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 
 import { Brand } from '@/components/brand';
@@ -9,15 +11,25 @@ import { Screen } from '@/components/screen';
 import { useSession } from '@/features/auth/session-context';
 import { useApiResource } from '@/hooks/use-api-resource';
 import { apiMessage, apiRequest } from '@/services/api';
-import { colors, radius, spacing, typography } from '@/theme/tokens';
-import type { PlanDefinition, PlanOverview } from '@/types/domain';
+import { radius, spacing, typography } from '@/theme/tokens';
+import type { PlanCode, PlanDefinition, PlanOverview } from '@/types/domain';
 
 function formatPrice(plan: PlanDefinition) {
   if (plan.priceMonthlyCents === 0) return 'R$ 0';
   return `R$ ${(plan.priceMonthlyCents / 100).toFixed(2).replace('.', ',')}/mês`;
 }
 
-function PlanCard({ plan, current }: { plan: PlanDefinition; current: boolean }) {
+function PlanCard({
+  plan, current, waitlisted, saving, onJoin, onLeave,
+}: {
+  plan: PlanDefinition;
+  current: boolean;
+  waitlisted: boolean;
+  saving: boolean;
+  onJoin: (plan: PlanDefinition) => void;
+  onLeave: (plan: PlanDefinition) => void;
+}) {
+  const styles = useThemeStyles(createStyles);
   const features = [
     'Resumos com IA',
     'Classificação de relevância',
@@ -38,18 +50,44 @@ function PlanCard({ plan, current }: { plan: PlanDefinition; current: boolean })
           <Text style={styles.planPrice}>{formatPrice(plan)}</Text>
         </View>
         {current ? <Text style={styles.currentChip}>PLANO ATUAL</Text> : null}
-        {!current && plan.recommended ? <Text style={styles.recommendedChip}>RECOMENDADO</Text> : null}
+        {!current && waitlisted ? <Text style={styles.currentChip}>NA LISTA</Text> : null}
+        {!current && !waitlisted && plan.recommended ? <Text style={styles.recommendedChip}>RECOMENDADO</Text> : null}
       </View>
       <Text style={styles.planLimit}>Até {plan.fundLimit} FIIs na carteira</Text>
       <View style={styles.featureList}>
         {features.map((feature) => <Text key={feature} style={styles.feature}>✓  {feature}</Text>)}
       </View>
+      {!current ? (
+        <Button
+          variant={waitlisted ? 'secondary' : 'primary'}
+          loading={saving}
+          onPress={() => (waitlisted ? onLeave(plan) : onJoin(plan))}
+        >
+          {waitlisted ? 'Sair da lista de espera' : 'Quero ser avisado'}
+        </Button>
+      ) : null}
     </Card>
   );
 }
 
 export default function ProfileScreen() {
-  const { user, logout, deleteAccount } = useSession();
+  const colors = useThemeColors();
+  const styles = useThemeStyles(createStyles);
+  const { user, logout, deleteAccount, updateTheme } = useSession();
+  const [savingTheme, setSavingTheme] = useState(false);
+  const [savingPlan, setSavingPlan] = useState<PlanCode | null>(null);
+
+  async function chooseTheme(theme: 'dark' | 'light') {
+    if (savingTheme || user?.tema === theme) return;
+    setSavingTheme(true);
+    try {
+      await updateTheme(theme);
+    } catch (error) {
+      Alert.alert('Não foi possível salvar o tema', apiMessage(error));
+    } finally {
+      setSavingTheme(false);
+    }
+  }
   const loadPlan = useCallback(async () => {
     const response = await apiRequest<{ data: PlanOverview }>('/me/plan');
     return response.data;
@@ -57,6 +95,53 @@ export default function ProfileScreen() {
   const planResource = useApiResource(loadPlan);
   const { reload } = planResource;
   const hasFocused = useRef(false);
+
+  async function joinPlanWaitlist(plan: PlanDefinition) {
+    if (savingPlan) return;
+    setSavingPlan(plan.code);
+    try {
+      await apiRequest('/me/plan/waitlist', {
+        method: 'POST',
+        body: JSON.stringify({ planCode: plan.code }),
+      });
+      planResource.setData((current) => current ? {
+        ...current,
+        waitlistedPlans: [...new Set([...current.waitlistedPlans, plan.code as Exclude<PlanCode, 'GRATIS'>])],
+      } : current);
+      Alert.alert('Você está na lista', `Avisaremos por e-mail quando o plano ${plan.name} estiver disponível. Nenhuma cobrança foi feita.`);
+    } catch (error) {
+      Alert.alert('Não foi possível entrar na lista', apiMessage(error));
+    } finally {
+      setSavingPlan(null);
+    }
+  }
+
+  async function leavePlanWaitlist(plan: PlanDefinition) {
+    if (savingPlan) return;
+    setSavingPlan(plan.code);
+    try {
+      await apiRequest(`/me/plan/waitlist/${plan.code}`, { method: 'DELETE' });
+      planResource.setData((current) => current ? {
+        ...current,
+        waitlistedPlans: current.waitlistedPlans.filter((code) => code !== plan.code),
+      } : current);
+    } catch (error) {
+      Alert.alert('Não foi possível sair da lista', apiMessage(error));
+    } finally {
+      setSavingPlan(null);
+    }
+  }
+
+  function confirmJoin(plan: PlanDefinition) {
+    Alert.alert(
+      `${plan.name} estará disponível em breve`,
+      'O lançamento começa pelo plano gratuito. Você pode entrar na lista para receber um aviso por e-mail quando este plano abrir. Não há cobrança agora.',
+      [
+        { text: 'Agora não', style: 'cancel' },
+        { text: 'Entrar na lista', onPress: () => void joinPlanWaitlist(plan) },
+      ],
+    );
+  }
 
   useFocusEffect(
     useCallback(() => {
@@ -105,6 +190,26 @@ export default function ProfileScreen() {
           <Text style={styles.email}>{user?.email}</Text>
         </View>
       </Card>
+      <Text style={styles.sectionTitle}>Aparência</Text>
+      <Text style={styles.sectionSubtitle}>Escolha como o Sentinela aparece para você.</Text>
+      <View style={styles.themeOptions} accessibilityRole="radiogroup">
+        {(['dark', 'light'] as const).map((theme) => (
+          <Pressable
+            key={theme}
+            accessibilityRole="radio"
+            accessibilityLabel={theme === 'dark' ? 'Tema escuro' : 'Tema claro'}
+            accessibilityState={{ checked: (user?.tema || 'dark') === theme, disabled: savingTheme }}
+            disabled={savingTheme}
+            onPress={() => void chooseTheme(theme)}
+            style={[styles.themeOption, (user?.tema || 'dark') === theme && styles.themeOptionSelected]}
+          >
+            <Text style={[styles.themeOptionText, (user?.tema || 'dark') === theme && styles.themeOptionTextSelected]}>
+              {theme === 'dark' ? 'Escuro' : 'Claro'}
+            </Text>
+          </Pressable>
+        ))}
+      </View>
+      {savingTheme ? <Text style={styles.themeSaving}>Salvando preferência...</Text> : null}
       <Text style={styles.sectionTitle}>Plano e assinatura</Text>
       {planResource.loading ? (
         <Card style={styles.note}><Text style={styles.noteText}>Consultando seu plano...</Text></Card>
@@ -131,13 +236,21 @@ export default function ProfileScreen() {
       {overview ? (
         <View style={styles.plansSection}>
           <Text style={styles.sectionTitle}>Conheça os planos</Text>
-          <Text style={styles.sectionSubtitle}>Compare os recursos disponíveis para sua carteira.</Text>
+          <Text style={styles.sectionSubtitle}>Os planos pagos ainda não estão disponíveis. Entre na lista para receber um aviso quando abrirem, sem cobrança agora.</Text>
           <View style={styles.planList}>
             {overview.plans.map((plan) => (
-              <PlanCard key={plan.code} plan={plan} current={plan.code === overview.currentPlan} />
+              <PlanCard
+                key={plan.code}
+                plan={plan}
+                current={plan.code === overview.currentPlan}
+                waitlisted={overview.waitlistedPlans.includes(plan.code as Exclude<PlanCode, 'GRATIS'>)}
+                saving={savingPlan === plan.code}
+                onJoin={confirmJoin}
+                onLeave={(selected) => void leavePlanWaitlist(selected)}
+              />
             ))}
           </View>
-          <Text style={styles.billingNote}>A contratação dos planos pagos será disponibilizada após a integração segura de assinaturas.</Text>
+          <Text style={styles.billingNote}>Os preços são informativos. A lista de espera não contrata o plano nem gera cobrança.</Text>
         </View>
       ) : null}
       <View style={styles.actions}>
@@ -149,7 +262,7 @@ export default function ProfileScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   header: { paddingTop: spacing.sm, marginBottom: 30 },
   eyebrow: { color: colors.brand, fontSize: 11, fontWeight: '900', letterSpacing: 1.7 },
   title: { ...typography.title, color: colors.text, marginTop: spacing.sm, marginBottom: spacing.xxl },
@@ -164,6 +277,12 @@ const styles = StyleSheet.create({
   noteText: { color: colors.textSecondary, fontSize: 13, lineHeight: 20 },
   sectionTitle: { ...typography.heading, color: colors.text, marginTop: spacing.xxl },
   sectionSubtitle: { color: colors.textSecondary, fontSize: 13, lineHeight: 19, marginTop: spacing.xs },
+  themeOptions: { flexDirection: 'row', gap: spacing.md, marginTop: spacing.md },
+  themeOption: { flex: 1, minHeight: 48, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.borderStrong, borderRadius: radius.md, backgroundColor: colors.surface },
+  themeOptionSelected: { borderColor: colors.brand, backgroundColor: colors.surfaceRaised },
+  themeOptionText: { color: colors.textSecondary, fontSize: 14, fontWeight: '700' },
+  themeOptionTextSelected: { color: colors.brand },
+  themeSaving: { color: colors.textSubtle, fontSize: 12, marginTop: spacing.sm },
   currentPlanCard: { gap: spacing.md, marginTop: spacing.md, borderColor: colors.brand, backgroundColor: colors.surfaceRaised },
   currentPlanLabel: { color: colors.brand, fontSize: 10, fontWeight: '900', letterSpacing: 1.4 },
   currentPlanName: { color: colors.text, fontSize: 22, fontWeight: '900', marginTop: spacing.xs },

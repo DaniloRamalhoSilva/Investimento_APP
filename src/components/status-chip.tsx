@@ -1,12 +1,14 @@
+import { useThemeColors, useThemeStyles } from '@/theme/theme-context';
+import type { ThemeColors } from '@/theme/tokens';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { colors, radius } from '@/theme/tokens';
+import { radius } from '@/theme/tokens';
 import type { Classification, Impact } from '@/types/domain';
 import { humanizeCode } from '@/utils/format';
 
 type Status = Classification | Impact | null | undefined;
 
-export function statusColor(status: Status) {
+export function statusColor(status: Status, colors: ThemeColors) {
   if (status === 'URGENTE' || status === 'NEGATIVO') return colors.urgent;
   if (status === 'RELEVANTE' || status === 'INCERTO') return colors.warning;
   if (status === 'POSITIVO') return colors.positive;
@@ -14,7 +16,9 @@ export function statusColor(status: Status) {
 }
 
 export function StatusChip({ status }: { status: Status }) {
-  const color = statusColor(status);
+  const colors = useThemeColors();
+  const styles = useThemeStyles(createStyles);
+  const color = statusColor(status, colors);
   return (
     <View style={[styles.chip, { borderColor: color }]}>
       <View style={[styles.dot, { backgroundColor: color }]} />
@@ -23,7 +27,7 @@ export function StatusChip({ status }: { status: Status }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   chip: {
     alignSelf: 'flex-start',
     flexDirection: 'row',

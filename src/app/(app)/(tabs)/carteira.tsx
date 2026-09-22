@@ -1,3 +1,5 @@
+import { useThemeColors, useThemeStyles } from '@/theme/theme-context';
+import type { ThemeColors } from '@/theme/tokens';
 import { useCallback, useRef, useState } from 'react';
 import { Alert, FlatList, Modal, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
@@ -7,10 +9,12 @@ import { Button } from '@/components/button';
 import { StatePanel } from '@/components/state-panel';
 import { useApiResource } from '@/hooks/use-api-resource';
 import { apiMessage, apiRequest } from '@/services/api';
-import { colors, radius, spacing, typography } from '@/theme/tokens';
+import { radius, spacing, typography } from '@/theme/tokens';
 import type { PortfolioFund } from '@/types/domain';
 
 export default function PortfolioScreen() {
+  const colors = useThemeColors();
+  const styles = useThemeStyles(createStyles);
   const loader = useCallback(async () => {
     const response = await apiRequest<{ data: PortfolioFund[] }>('/me/funds');
     return response.data;
@@ -176,7 +180,7 @@ export default function PortfolioScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.background },
   content: { flexGrow: 1, paddingHorizontal: spacing.xl, paddingBottom: 28 },
   header: { gap: spacing.sm, paddingTop: spacing.sm, paddingBottom: spacing.xxl },
@@ -185,7 +189,7 @@ const styles = StyleSheet.create({
   subtitle: { color: colors.textSecondary, fontSize: 14, marginBottom: spacing.md },
   fund: { minHeight: 72, flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: spacing.md, borderWidth: 1, borderColor: colors.border, borderRadius: radius.lg, backgroundColor: colors.surface },
   pressed: { opacity: 0.8 },
-  fundMark: { width: 42, height: 42, alignItems: 'center', justifyContent: 'center', borderRadius: radius.md, backgroundColor: 'rgba(44,224,189,0.10)' },
+  fundMark: { width: 42, height: 42, alignItems: 'center', justifyContent: 'center', borderRadius: radius.md, backgroundColor: colors.surfaceRaised },
   fundMarkText: { color: colors.brand, fontSize: 13, fontWeight: '900' },
   fundBody: { flex: 1 },
   ticker: { color: colors.text, fontSize: 15, fontWeight: '900' },

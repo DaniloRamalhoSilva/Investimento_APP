@@ -139,7 +139,7 @@ export function apiMessage(error: unknown) {
     const messages: Record<string, string> = {
       AUTH_INVALID_CREDENTIALS: 'E-mail ou senha inválidos.',
       USER_ALREADY_EXISTS: 'Já existe uma conta com este e-mail.',
-      PLAN_LIMIT_REACHED: 'Você chegou ao limite de FIIs do seu plano atual. Faça upgrade para ampliar sua carteira e continuar acompanhando todos os seus ativos no Sentinela.',
+      PLAN_LIMIT_REACHED: 'Você chegou ao limite de FIIs do plano gratuito. Os planos pagos ainda não estão disponíveis; você pode entrar na lista de espera no Perfil.',
       AUTH_GOOGLE_LINK_REQUIRED: 'Este e-mail já possui conta. Entre com senha para vincular o Google.',
       FUND_NOT_FOUND: 'Ativo não encontrado.',
       FUND_NOT_IN_PORTFOLIO: 'Este ativo ainda não foi adicionado à sua carteira.',

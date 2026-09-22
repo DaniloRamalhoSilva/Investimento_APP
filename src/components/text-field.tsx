@@ -1,8 +1,10 @@
+import { useThemeColors, useThemeStyles } from '@/theme/theme-context';
+import type { ThemeColors } from '@/theme/tokens';
 import { useState } from 'react';
 import type { TextInputProps } from 'react-native';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
-import { colors, radius } from '@/theme/tokens';
+import { radius } from '@/theme/tokens';
 
 type Props = TextInputProps & {
   label: string;
@@ -11,6 +13,8 @@ type Props = TextInputProps & {
 };
 
 export function TextField({ label, error, password = false, ...props }: Props) {
+  const colors = useThemeColors();
+  const styles = useThemeStyles(createStyles);
   const [visible, setVisible] = useState(false);
   return (
     <View style={styles.wrapper}>
@@ -40,7 +44,7 @@ export function TextField({ label, error, password = false, ...props }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   wrapper: { width: '100%', gap: 7 },
   label: { color: colors.text, fontSize: 13, fontWeight: '700' },
   inputRow: {

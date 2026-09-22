@@ -8,6 +8,7 @@ export type User = {
   nome: string;
   sobrenome: string | null;
   email: string;
+  tema: 'dark' | 'light';
 };
 
 export type AuthTokens = {
@@ -82,6 +83,7 @@ export type PlanOverview = {
   currentPlan: PlanCode;
   fundLimit: number;
   fundsUsed: number;
+  waitlistedPlans: Exclude<PlanCode, 'GRATIS'>[];
   plans: PlanDefinition[];
 };
 

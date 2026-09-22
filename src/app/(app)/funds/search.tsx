@@ -1,3 +1,5 @@
+import { useThemeColors, useThemeStyles } from '@/theme/theme-context';
+import type { ThemeColors } from '@/theme/tokens';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, FlatList, Modal, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { router } from 'expo-router';
@@ -6,12 +8,14 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '@/components/button';
 import { StatePanel } from '@/components/state-panel';
 import { ApiError, apiMessage, apiRequest } from '@/services/api';
-import { colors, radius, spacing } from '@/theme/tokens';
+import { radius, spacing } from '@/theme/tokens';
 import type { PortfolioFund, SearchFund } from '@/types/domain';
 
 type AddError = { message: string; canUpgrade: boolean };
 
 export default function SearchFundsScreen() {
+  const colors = useThemeColors();
+  const styles = useThemeStyles(createStyles);
   const [query, setQuery] = useState('');
   const [items, setItems] = useState<SearchFund[]>([]);
   const [loading, setLoading] = useState(true);
@@ -122,7 +126,7 @@ export default function SearchFundsScreen() {
                   setAddError(null);
                   router.replace('/(app)/(tabs)/perfil');
                 }}>
-                  Fazer upgrade
+                  Ver lista de espera
                 </Button>
               </View>
             ) : (
@@ -135,7 +139,7 @@ export default function SearchFundsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.background },
   topbar: { minHeight: 54, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: spacing.xl },
   back: { width: 36, color: colors.text, fontSize: 38, lineHeight: 38 },
@@ -148,7 +152,7 @@ const styles = StyleSheet.create({
   result: { color: colors.textSubtle, fontSize: 12, marginBottom: spacing.lg },
   row: { minHeight: 70, flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: spacing.md, borderWidth: 1, borderColor: colors.border, borderRadius: radius.lg, backgroundColor: colors.surface },
   pressed: { opacity: 0.8 },
-  mark: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center', borderRadius: radius.md, backgroundColor: 'rgba(44,224,189,0.10)' },
+  mark: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center', borderRadius: radius.md, backgroundColor: colors.surfaceRaised },
   markText: { color: colors.brand, fontWeight: '900' },
   body: { flex: 1 },
   ticker: { color: colors.text, fontSize: 15, fontWeight: '900' },

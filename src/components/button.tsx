@@ -1,7 +1,9 @@
+import { useThemeColors, useThemeStyles } from '@/theme/theme-context';
+import type { ThemeColors } from '@/theme/tokens';
 import type { PropsWithChildren } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text } from 'react-native';
 
-import { colors, radius } from '@/theme/tokens';
+import { radius } from '@/theme/tokens';
 
 type Props = PropsWithChildren<{
   onPress: () => void;
@@ -19,6 +21,8 @@ export function Button({
   variant = 'primary',
   accessibilityLabel,
 }: Props) {
+  const colors = useThemeColors();
+  const styles = useThemeStyles(createStyles);
   const isDisabled = disabled || loading;
   return (
     <Pressable
@@ -43,7 +47,7 @@ export function Button({
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   base: {
     width: '100%',
     minHeight: 52,
@@ -55,7 +59,7 @@ const styles = StyleSheet.create({
   },
   primary: { backgroundColor: colors.brand, borderColor: colors.brand },
   secondary: { backgroundColor: colors.surfaceRaised, borderColor: colors.borderStrong },
-  danger: { backgroundColor: 'rgba(255,102,120,0.10)', borderColor: 'rgba(255,102,120,0.45)' },
+  danger: { backgroundColor: colors.surfaceRaised, borderColor: colors.urgent },
   ghost: { backgroundColor: 'transparent', borderColor: 'transparent' },
   label: { fontSize: 15, fontWeight: '800' },
   primaryLabel: { color: colors.brandInk },

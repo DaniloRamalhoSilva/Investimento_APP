@@ -1,11 +1,14 @@
+import { useThemeColors, useThemeStyles } from '@/theme/theme-context';
+import type { ThemeColors } from '@/theme/tokens';
 import { StyleSheet, Text, View } from 'react-native';
 import { Tabs } from 'expo-router';
 
-import { colors } from '@/theme/tokens';
 
 const icons: Record<string, string> = { index: '⌂', carteira: '▦', alertas: '●', perfil: '◎' };
 
 export default function TabsLayout() {
+  const colors = useThemeColors();
+  const styles = useThemeStyles(createStyles);
   return (
     <Tabs
       screenOptions={({ route }) => ({
@@ -29,7 +32,7 @@ export default function TabsLayout() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   bar: { height: 68, paddingTop: 7, paddingBottom: 8, borderTopColor: colors.border, backgroundColor: colors.backgroundElevated },
   label: { fontSize: 11, fontWeight: '700' },
   iconBox: { width: 28, height: 24, alignItems: 'center', justifyContent: 'center' },

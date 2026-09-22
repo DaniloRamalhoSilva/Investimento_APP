@@ -1,7 +1,9 @@
+import { useThemeStyles } from '@/theme/theme-context';
+import type { ThemeColors } from '@/theme/tokens';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { StatusChip } from '@/components/status-chip';
-import { colors, radius, spacing } from '@/theme/tokens';
+import { radius, spacing } from '@/theme/tokens';
 import type { FeedItem } from '@/types/domain';
 import { formatDate, humanizeCode } from '@/utils/format';
 
@@ -12,6 +14,7 @@ type Props = {
 };
 
 export function FeedCard({ item, onPress, compact = false }: Props) {
+  const styles = useThemeStyles(createStyles);
   return (
     <Pressable
       accessibilityRole="button"
@@ -33,7 +36,7 @@ export function FeedCard({ item, onPress, compact = false }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   card: { gap: spacing.md, padding: spacing.lg, borderWidth: 1, borderColor: colors.border, borderRadius: radius.lg, backgroundColor: colors.surface },
   compactCard: { gap: spacing.sm },
   pressed: { opacity: 0.85, transform: [{ scale: 0.992 }] },

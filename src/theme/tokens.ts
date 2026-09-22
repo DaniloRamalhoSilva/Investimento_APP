@@ -1,4 +1,4 @@
-export const colors = {
+export const darkColors = {
   background: '#061018',
   backgroundElevated: '#081720',
   surface: '#0C1B26',
@@ -17,7 +17,31 @@ export const colors = {
   info: '#6CB9FF',
   white: '#FFFFFF',
   black: '#000000',
-} as const;
+};
+
+export const lightColors: typeof darkColors = {
+  background: '#F5F9FA',
+  backgroundElevated: '#ECF3F5',
+  surface: '#FFFFFF',
+  surfaceRaised: '#EAF5F3',
+  brand: '#087D6A',
+  brandStrong: '#066653',
+  brandInk: '#FFFFFF',
+  text: '#10262D',
+  textSecondary: '#405A64',
+  textSubtle: '#617B84',
+  border: '#D4E1E4',
+  borderStrong: '#AAC5C9',
+  positive: '#087D64',
+  warning: '#9A5E00',
+  urgent: '#BF3048',
+  info: '#1767A2',
+  white: '#FFFFFF',
+  black: '#000000',
+};
+
+export const colors = darkColors;
+export type ThemeColors = typeof darkColors;
 
 export const spacing = {
   xs: 4,

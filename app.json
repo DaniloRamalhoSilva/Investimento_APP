@@ -6,7 +6,7 @@
     "orientation": "portrait",
     "icon": "./assets/images/sentinela-icon.png",
     "scheme": "sentinela",
-    "userInterfaceStyle": "dark",
+    "userInterfaceStyle": "automatic",
     "backgroundColor": "#061018",
     "ios": {
       "icon": "./assets/images/sentinela-icon.png",
